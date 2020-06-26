@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SRFI ?: Pattern-matching Variant of the and-let* Form That Supports Multiple Values</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/srfi.css" type="text/css" />
+    <link href="/favicon.png" rel="icon" sizes="192x192" type="image/png" />
+  </head>
+
+  <body>
+
+<h1>Title</h1>
+
+Pattern-matching Variant of the <code>and-let*</code> Form That Supports Multiple Values
+
+<h1>Author</h1>
+
+Panicz Maciej Godek
+
+<h1>Status</h1>
+
+??? the draft/final/withdrawn status of the SRFI, information on how
+to subscribe to its mailing list, and important dates in its history.
+The editor will add this section.
+
+<h1>Abstract</h1>
+
+<p>The SRFI-2 library introduced the <code>and-let*</code> form
+  for short-circuited evaluation in the style of the <code>and</code>
+  form with the ability to capture the (non-<code>#f</code>) results
+  in the style of the <code>let*</code> form. This document extends
+  the <code>and-let*</code> form with the abilities to pattern-match
+  (or "destructurally bind") the values of evaluated expressions
+  (where the match failure causes short-circuiting, rather than
+  raising an error), and to handle multiple values (where only the
+  falsehood of the first value causes short-circuiting).
+</p>
+
+<h1>Issues</h1>
+
+??? Optional section that may point out things to be resolved.  This
+will not appear in the final SRFI.
+
+<h1>Rationale</h1>
+
+<p>It is well known that, in the context of the <code>if</code> condition,
+  Scheme treats <code>#f</code> as a <i>false</i> value, and every other value
+  is considered true (or "true-ish").</p>
+
+<p>This design decision has lead to the development of idiom, where the
+  <code>#f</code> is considered to represent "the absence of value" or a "failure
+  of computation", whereas and other value is considered to represent a meaningful
+  result.</p>
+
+<p>In typed languages, this pattern is usually expressed in terms of algebraic
+  data types. For example, the Haskell language defines the polymorphic type
+  <code>Maybe a</code> as either <code>Just a</code> or <code>Nothing</code>,
+  where <code>Just a</code> is used to represent the value of type <code>a</code>,
+  and <code>Nothing</code> is used to represent the absence of value.</p>
+
+<p>Moreover, in many functional langauges, the types isomorphic to <code>Maybe</code> 
+  are considered to be "monads", which means that they can use some facilities
+  that those languages provide for sequencing functions that return things that
+  are considered to be "monads". In particular, Haskell provides a special syntactic
+  form called the <code>do</code> notation, which allows the function like</p>
+
+<pre>
+  h x = case (f x) of
+          Just y -> case (g (k y)) of
+                      Just z -> Just (l z)
+                      Nothing -> Nothing
+          Nothing -> Nothing
+</pre>
+
+to be rewritten as
+
+<pre>
+  h x = do
+    y <- (f x)
+    z <- (g (k y))
+    return (l z)
+</pre>
+
+<p>where <code>f</code> and <code>g</code> (and <code>h</code>) return
+  optional values, and <code>k</code> and <code>l</code> return obligatory
+  values.</p>
+
+<p>Since these facilities rely on some advanced features of type systems
+  that are lacking from most Scheme implementations, Schemers have invented
+  a special form specifically for dealing with optional values. The form
+  is called <code>and-let*</code> and has been defined in the SRFI-2 document.</p>
+
+<p>Accordingly, the equivalent code using Scheme can be written as</p>
+
+<pre>
+  (define (h x)
+    (and-let* ((y (f x))
+               (z (g (k y))))
+      (l z)))
+</pre>
+
+<p>However, the original definition of <code>and-let*</code> does not allow
+  to handle multiple values. It also doesn't allow to destructure the value
+  of the evaluated expression. The purpose of this SRFI is to extend the
+  <code>and-let*</code> form with these capabilities.</p>
+
+<p>Therefore, with the capabilities from this SRFI, the two first examples
+  from the Rationale section of SRFI-2, namely:</p>
+
+<pre>
+  (and-let* ((my-list (compute-list))
+             ((not (null? my-list))))
+    (do-something my-list))
+
+  (define (lookup key alist)
+    (and-let* ((x (assq key alist)))
+      (cdr x)))
+</pre>
+
+<p>could roughly be rewritten as:</p>
+
+<pre>
+  (and-let* ((`(,my . ,list) (compute-list)))
+    (do-something `(,my . ,list)))
+
+  (define (lookup key alist)
+    (and-let* ((`(,key . ,value) (assq key alist)))
+      key))
+</pre>
+
+<p>(The first example is not exactly equivalent, because it assumes
+  that the test <code>(not (null? my-list))</code> has the same meaning
+  as <code>(pair? my-list)</code>, which doesn't need to be true, even
+  if usually is. Moreover, the body of the form contains an unnecessary
+  <code>cons</code> operation which may incur performance penalty.)</p>
+
+<h1>Specification</h1>
+
+<p>The extensions provided here do not invalidate or modify any of the prior
+  uses of the SRFI-2's <code>and-let*</code> form.</p>
+
+<p>In particular, the <code>and-let*</code> form allowed two types of expressions
+  inside of its "claws":</p>
+
+<pre>(variable expression)</pre>
+
+<p>and</p>
+
+<pre>(guard-expression)</pre>
+
+<p>This SRFI document allows <code>variable</code> to be an arbitrary
+  pattern that is a valid pattern of the underlying pattern matcher
+  (see the SRFI-pattern matching document for more details):</p>
+
+<pre>(pattern expression)</pre>
+
+<p>In particular, since patterns can be literal values, it is possible
+  to negate the condition:</p>
+
+<pre>
+  (and-let*  ((my-list (compute-list))
+              (#f (null? my-list)))
+    (do-something my-list))
+</pre>
+
+<p>If the value of an expression does not match the pattern, then the
+  value of the whole <code>and-let*</code> form is <code>#f</code>.<p>
+
+<p>This variant of the <code>and-let*</code> form also supports multiple
+  values, each of which can be a pattern:</p>
+
+<pre>(pattern patterns ... expression)</pre>
+
+<p>If the first <code>pattern</code> is a variable, then it must have
+  a non-<code>#f</code> value in order to proceed with evaluation
+  - otherwise, the value of the whole <code>and-let*</code> form
+  becomes <code>#f</code>.</p>
+
+<p>If the <code>expression</code> returns less values than expected,
+  then the value of the whole <code>and-let*</code> expression becomes
+  <code>#f</code>. If it returns more values than expected, then the
+  additional values are ignored.</p>
+      
+<h1>Implementation</h1>
+
+<pre>
+(define-syntax and-let*
+  (lambda (stx)
+    (syntax-case stx ()
+
+      ((_)
+       #'#t)
+
+      ((_ ())
+       #'#t)
+
+      ((_ () body ...)
+       #'(let () body ...))
+
+      ((_ ((value expression) rest ...) body ...)
+       (identifier? #'value)
+       #'(let ((value expression))
+	   (and value
+		(and-let* (rest ...)
+		   body ...))))
+
+      ((_ ((value expression) rest ...) body ...)
+       #'(match expression
+	   (value
+	    (and-let* (rest ...)
+	      body ...))
+	   (_ #f)))
+
+      ((_ ((condition) rest ...)
+	  body ...)
+       #'(and condition
+	      (and-let* (rest ...)
+		body ...)))
+
+      ((_ ((value values ... expression) rest ...) body ...)
+       (identifier? #'value)
+       #'(call-with-values (lambda () expression)
+	   (lambda args
+             (match args
+              ((value values ... . _)
+	       (and value
+		    (and-let* (rest ...)
+	               body ...)))
+	      (_ #f)))))
+
+      ((_ ((values ... expression) rest ...) body ...)
+       #'(call-with-values (lambda () expression)
+          (lambda args
+            (match args
+	      ((values ... . _)
+	       (and-let* (rest ...)
+	          body ...))
+	      (_ #f)))))
+      )))
+</pre>
+
+<p>A working implementation for Guile Scheme can be found
+  in the <a href="https://github.com/plande/grand-scheme/blob/master/grand/syntax.scm">(grand syntax)</a>
+  module of the <a href="https://github.com/plande/grand-scheme">(grand scheme)</a> glossary.</p>
+
+<p>A working implementation for the Racket language can be found in the <a href="https://github.com/panicz/sracket/blob/master/grand-syntax.rkt">"grand-syntax.rkt"</a> module of the <a href="https://github.com/panicz/sracket">Sracket</a> framework.</p>
+
+<h1>Acknowledgements</h1>
+
+??? credit where it is due
+
+<h1>Copyright</h1>
+Copyright &copy; Panicz Maciej Godek (2020).
+
+<p>
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation files
+  (the "Software"), to deal in the Software without restriction,
+  including without limitation the rights to use, copy, modify, merge,
+  publish, distribute, sublicense, and/or sell copies of the Software,
+  and to permit persons to whom the Software is furnished to do so,
+  subject to the following conditions:
+
+<p>
+  The above copyright notice and this permission notice (including the
+  next paragraph) shall be included in all copies or substantial
+  portions of the Software.
+<p>
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+  BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+  ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+  <hr>
+  <address>Editor: <a href="mailto:srfi-editors+at+srfi+dot+schemers+dot+org">Arthur A. Gleckler</a></address></body></html>
