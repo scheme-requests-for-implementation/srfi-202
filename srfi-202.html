@@ -1,30 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <title>SRFI ?: Pattern-matching Variant of the and-let* Form That Supports Multiple Values</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/srfi.css" type="text/css" />
-    <link href="/favicon.png" rel="icon" sizes="192x192" type="image/png" />
-  </head>
-
+    <meta charset="utf-8">
+    <title>SRFI 202: Pattern-matching Variant of the and-let* Form That Supports Multiple Values</title>
+    <link href="favicon.png" rel="icon" sizes="192x192" type="image/png">
+    <link rel="stylesheet" href="/srfi.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1"></head>
   <body>
+    <h1><a href="https://srfi.schemers.org/"><img class="srfi-logo" src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo" /></a>202: Pattern-matching Variant of the and-let* Form That Supports Multiple Values</h1>
 
-<h1>Title</h1>
+<p>by Panicz Maciej Godek</p>
 
-Pattern-matching Variant of the <code>and-let*</code> Form That Supports Multiple Values
-
-<h1>Author</h1>
-
-Panicz Maciej Godek
-
-<h1>Status</h1>
+<h2>Status</h2>
 
 ??? the draft/final/withdrawn status of the SRFI, information on how
 to subscribe to its mailing list, and important dates in its history.
 The editor will add this section.
 
-<h1>Abstract</h1>
+<h2>Abstract</h2>
 
 <p>The SRFI-2 library introduced the <code>and-let*</code> form
   for short-circuited evaluation in the style of the <code>and</code>
@@ -37,12 +30,12 @@ The editor will add this section.
   falsehood of the first value causes short-circuiting).
 </p>
 
-<h1>Issues</h1>
+<h2>Issues</h2>
 
 ??? Optional section that may point out things to be resolved.  This
 will not appear in the final SRFI.
 
-<h1>Rationale</h1>
+<h2>Rationale</h2>
 
 <p>It is well known that, in the context of the <code>if</code> condition,
   Scheme treats <code>#f</code> as a <i>false</i> value, and every other value
@@ -135,7 +128,7 @@ to be rewritten as
   if usually is. Moreover, the body of the form contains an unnecessary
   <code>cons</code> operation which may incur performance penalty.)</p>
 
-<h1>Specification</h1>
+<h2>Specification</h2>
 
 <p>The extensions provided here do not invalidate or modify any of the prior
   uses of the SRFI-2's <code>and-let*</code> form.</p>
@@ -182,7 +175,7 @@ to be rewritten as
   <code>#f</code>. If it returns more values than expected, then the
   additional values are ignored.</p>
       
-<h1>Implementation</h1>
+<h2>Implementation</h2>
 
 <pre>
 (define-syntax and-let*
@@ -246,11 +239,11 @@ to be rewritten as
 
 <p>A working implementation for the Racket language can be found in the <a href="https://github.com/panicz/sracket/blob/master/grand-syntax.rkt">"grand-syntax.rkt"</a> module of the <a href="https://github.com/panicz/sracket">Sracket</a> framework.</p>
 
-<h1>Acknowledgements</h1>
+<h2>Acknowledgements</h2>
 
 ??? credit where it is due
 
-<h1>Copyright</h1>
+<h2>Copyright</h2>
 Copyright &copy; Panicz Maciej Godek (2020).
 
 <p>
