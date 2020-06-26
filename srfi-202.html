@@ -25,7 +25,7 @@ The editor will add this section.
   in the style of the <code>let*</code> form. This document extends
   the <code>and-let*</code> form with the abilities to pattern-match
   (or "destructurally bind") the values of evaluated expressions
-  (where the match failure causes short-circuiting, rather than
+  (where the match failure causes short-circuiting rather than
   raising an error), and to handle multiple values (where only the
   falsehood of the first value causes short-circuiting).
 </p>
@@ -41,18 +41,18 @@ will not appear in the final SRFI.
   Scheme treats <code>#f</code> as a <i>false</i> value, and every other value
   is considered true (or "true-ish").</p>
 
-<p>This design decision has lead to the development of idiom, where the
+<p>This design decision has led to the development of the idiom in which the
   <code>#f</code> is considered to represent "the absence of value" or a "failure
   of computation", whereas and other value is considered to represent a meaningful
   result.</p>
 
-<p>In typed languages, this pattern is usually expressed in terms of algebraic
+<p>In strongly typed languages, this pattern is usually expressed in terms of algebraic
   data types. For example, the Haskell language defines the polymorphic type
   <code>Maybe a</code> as either <code>Just a</code> or <code>Nothing</code>,
   where <code>Just a</code> is used to represent the value of type <code>a</code>,
   and <code>Nothing</code> is used to represent the absence of value.</p>
 
-<p>Moreover, in many functional langauges, the types isomorphic to <code>Maybe</code>
+<p>Moreover, in many functional languages, the types isomorphic to <code>Maybe</code>
   are considered to be "monads", which means that they can use some facilities
   that those languages provide for sequencing functions that return things that
   are considered to be "monads". In particular, Haskell provides a special syntactic
@@ -94,12 +94,12 @@ to be rewritten as
 </pre>
 
 <p>However, the original definition of <code>and-let*</code> does not allow
-  to handle multiple values. It also doesn't allow to destructure the value
+  one to handle multiple values. It also doesn't allow one to destructure the value
   of the evaluated expression. The purpose of this SRFI is to extend the
   <code>and-let*</code> form with these capabilities.</p>
 
 <p>Therefore, with the capabilities from this SRFI, the two first examples
-  from the Rationale section of SRFI-2, namely:</p>
+  from the Rationale section of SRFI 2, namely:</p>
 
 <pre>
   (and-let* ((my-list (compute-list))
@@ -131,7 +131,7 @@ to be rewritten as
 <h2>Specification</h2>
 
 <p>The extensions provided here do not invalidate or modify any of the prior
-  uses of the SRFI-2's <code>and-let*</code> form.</p>
+  uses of the SRFI 2's <code>and-let*</code> form.</p>
 
 <p>In particular, the <code>and-let*</code> form allowed two types of expressions
   inside of its "claws":</p>
@@ -144,7 +144,8 @@ to be rewritten as
 
 <p>This SRFI document allows <code>variable</code> to be an arbitrary
   pattern that is a valid pattern of the underlying pattern matcher
-  (see the SRFI-pattern matching document for more details):</p>
+  (see <a href="https://srfi.schemers.org/srfi-200">SRFI 200</a>
+  Pattern Matching for more details):</p>
 
 <pre>(pattern expression)</pre>
 
@@ -167,10 +168,10 @@ to be rewritten as
 
 <p>If the first <code>pattern</code> is a variable, then it must have
   a non-<code>#f</code> value in order to proceed with evaluation
-  - otherwise, the value of the whole <code>and-let*</code> form
+  &mdash; otherwise, the value of the whole <code>and-let*</code> form
   becomes <code>#f</code>.</p>
 
-<p>If the <code>expression</code> returns less values than expected,
+<p>If the <code>expression</code> returns fewer values than expected,
   then the value of the whole <code>and-let*</code> expression becomes
   <code>#f</code>. If it returns more values than expected, then the
   additional values are ignored.</p>
