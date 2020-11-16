@@ -105,11 +105,12 @@ to be rewritten as
 
 <pre>
   (and-let* ((my-list (compute-list))
-             ((not (null? my-list))))
+             ((pair? my-list)))
     (do-something my-list))
 
   (define (lookup key alist)
-    (and-let* ((x (assq key alist)))
+    (and-let* ((x (assq key alist))
+               ((pair? x)))
       (cdr x)))
 </pre>
 
@@ -123,12 +124,6 @@ to be rewritten as
     (and-let* ((`(,key . ,value) (assq key alist)))
       key))
 </pre>
-
-<p>(The first example is not exactly equivalent, because it assumes
-  that the test <code>(not (null? my-list))</code> has the same meaning
-  as <code>(pair? my-list)</code>, which doesn't need to be true, even
-  if usually is. Moreover, the body of the form contains an unnecessary
-  <code>cons</code> operation which may incur performance penalty.)</p>
 
 <h2>Specification</h2>
 
@@ -178,12 +173,34 @@ to be rewritten as
   <code>#f</code>. If it returns more values than expected, then the
   additional values are ignored.</p>
 
+<p>In addition, following SRFI-71 and SRFI-201 - the
+  extension proposed here supports the <code>values</code>
+  keyword specially, allowing to capture "the remaining
+  values" in a list - for example, the claws of form
+</p>
+
+<pre>((<b>values</b> p1 p2 . v*) expression)</pre>
+
+<p>(where <code><b>values</b></code> is to be treated as a
+  literal symbol) requires that
+  <code>expression</code> returns at least two values;
+  the first two will be bound to patterns <code>p1</code>
+  and <code>p2</code> (if they match), and the
+  remaining values, if present, will be captured
+  in a list <code>v*</code>.
+</p>
+
+<p>If the <code>expression</code> returns (in this case)
+  less than two values, then the whole
+  <code>and-let*</code> form short-circuits to
+  <code>#f</code>.</p>
+  
 <h2>Implementation</h2>
 
 <pre>
 (define-syntax and-let*
   (lambda (stx)
-    (syntax-case stx ()
+    (syntax-case stx (values)
 
       ((_)
        #'#t)
@@ -194,13 +211,23 @@ to be rewritten as
       ((_ () body ...)
        #'(let () body ...))
 
-      ((_ ((value expression) rest ...) body ...)
-       (identifier? #'value)
-       #'(let ((value expression))
-	   (and value
+      ((_ ((name binding) rest ...) body ...)
+       (identifier? #'name)
+       #'(let ((name binding))
+	   (and name
 		(and-let* (rest ...)
-		   body ...))))
+	           body ...))))
 
+      ((_ (((values . structure) expression) rest ...)
+          body ...)
+       #'(call-with-values (lambda () expression)
+	   (lambda args
+	     (match args
+	       (structure
+		(and-let* (rest ...)
+		  body ...))
+	       (_ #f)))))
+      
       ((_ ((value expression) rest ...) body ...)
        #'(match expression
 	   (value
@@ -214,37 +241,76 @@ to be rewritten as
 	      (and-let* (rest ...)
 		body ...)))
 
-      ((_ ((value values ... expression) rest ...) body ...)
+      ((_ ((value * ... expression) rest ...) body ...)
        (identifier? #'value)
        #'(call-with-values (lambda () expression)
 	   (lambda args
-             (match args
-              ((value values ... . _)
-	       (and value
-		    (and-let* (rest ...)
-	               body ...)))
-	      (_ #f)))))
+	     (match args
+	       ((value * ... . _)
+		(and value
+		     (and-let* (rest ...)
+		       body ...)))
+	       (_ #f)))))
 
-      ((_ ((values ... expression) rest ...) body ...)
+      ((_ ((value ... expression) rest ...) body ...)
        #'(call-with-values (lambda () expression)
-          (lambda args
-            (match args
-	      ((values ... . _)
-	       (and-let* (rest ...)
-	          body ...))
-	      (_ #f)))))
+	   (lambda args
+	     (match args
+	       ((value ... . _)
+		(and-let* (rest ...)
+		  body ...))
+	       (_ #f)))))
+
       )))
 </pre>
 
-<p>A working implementation for Guile Scheme can be found
-  in the <a href="https://github.com/plande/grand-scheme/blob/master/grand/syntax.scm">(grand syntax)</a>
-  module of the <a href="https://github.com/plande/grand-scheme">(grand scheme)</a> glossary.</p>
+<p>The repository for this SRFI contains an implementation
+  for <a href="https://github.com/panicz/srfi-202/tree/draft-2/guile/srfi/202.scm">Guile</a> built on top of the
+  <code>(ice-9 match)</code> module a.k.a.
+  Wright-Cartwright-Shinn matcher, and an implementation
+  for <a href="https://github.com/panicz/srfi-202/tree/draft-2/racket/srfi/202.rkt">Racket</a>, built on top of Racket's
+  <code>racket/match</code> module. A suite of
+  testable examples is available for both 
+  <a href="https://github.com/panicz/srfi-202/tree/draft-2/guile/examples.scm">Guile</a> and <a href="https://github.com/panicz/srfi-202/tree/draft-2/racket/examples.rkt">Racket</a>.</p>
 
-<p>A working implementation for the Racket language can be found in the <a href="https://github.com/panicz/sracket/blob/master/grand-syntax.rkt">"grand-syntax.rkt"</a> module of the <a href="https://github.com/panicz/sracket">Sracket</a> framework.</p>
 
 <h2>Acknowledgements</h2>
 
-??? credit where it is due
+<p>The original <code>and-let*</code> form was conceived
+  by Oleg Kiselyov, who owes the credit for both the
+  idea and the name. It was one of the earliest documents
+  described within the SRFI process, as it received
+  the number 2.</p>
+
+<p>The editor of this SRFI turned out to be a real
+  Schemer, and when I asked him if it would be possible
+  to make sure that it gets the number 202, he said he
+  would do his best (I'm sorry for turning you in,
+  Arthur).</p>
+
+<p>This SRFI owes the support for <code>values</code>
+  keyword to Marc Nieper-Wisskirchen, who pointed out
+  the limitations of the original solution that
+  I initially proposed. Marc's remarks about backward
+  compatibility also helped to improve this text.</p>
+
+<p>The technique of pattern matching on data structures
+  was brought to Scheme by Andrew K. Wright and Robert
+  Cartwright through Alex Shinn's implementation, that was
+  distributed with many implementations of Scheme.</p>
+
+<p>My first contact with Scheme was through Guile,
+  which is a part of the GNU project. I found Guile
+  to have exceptionally good documentation, optimized
+  for people who spend their lives in VT100 terminal
+  emulators. The maintainers of Guile at that time were
+  Neil Jerram, Ludovic Courtes, Andy Wingo and
+  Mark Weaver.</p>
+
+<p>The person responsible for convincing me that
+  it makes sense to express my ideas and developments
+  regarding Scheme in the form of SRFI documents is
+  John Cowan.</p>
 
 <h2>Copyright</h2>
 Copyright &copy; Panicz Maciej Godek (2020).
