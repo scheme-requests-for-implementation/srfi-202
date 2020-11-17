@@ -194,7 +194,7 @@ to be rewritten as
   less than two values, then the whole
   <code>and-let*</code> form short-circuits to
   <code>#f</code>.</p>
-  
+
 <h2>Implementation</h2>
 
 <pre>
@@ -227,7 +227,7 @@ to be rewritten as
 		(and-let* (rest ...)
 		  body ...))
 	       (_ #f)))))
-      
+
       ((_ ((value expression) rest ...) body ...)
        #'(match expression
 	   (value
@@ -270,7 +270,7 @@ to be rewritten as
   Wright-Cartwright-Shinn matcher, and an implementation
   for <a href="https://github.com/panicz/srfi-202/tree/draft-2/racket/srfi/202.rkt">Racket</a>, built on top of Racket's
   <code>racket/match</code> module. A suite of
-  testable examples is available for both 
+  testable examples is available for both
   <a href="https://github.com/panicz/srfi-202/tree/draft-2/guile/examples.scm">Guile</a> and <a href="https://github.com/panicz/srfi-202/tree/draft-2/racket/examples.rkt">Racket</a>.</p>
 
 
