@@ -46,13 +46,13 @@ None at present.
 
 <p>This design decision has led to the development of the idiom in which the
   <code>#f</code> is considered to represent "the absence of value" or a "failure
-  of computation", whereas and other value is considered to represent a meaningful
+  of computation", whereas any other value is considered to represent a meaningful
   result.</p>
 
 <p>In strongly typed languages, this pattern is usually expressed in terms of algebraic
   data types. For example, the Haskell language defines the polymorphic type
   <code>Maybe a</code> as either <code>Just a</code> or <code>Nothing</code>,
-  where <code>Just a</code> is used to represent the value of type <code>a</code>,
+  where <code>Just a</code> is used to represent a value of type <code>a</code>,
   and <code>Nothing</code> is used to represent the absence of value.</p>
 
 <p>Moreover, in many functional languages, the types isomorphic to <code>Maybe</code>
