@@ -25,12 +25,12 @@
 
 <p>The SRFI-2 library introduced the <code>and-let*</code> form
   for short-circuited evaluation in the style of the <code>and</code>
-  form with the ability to capture the (non-<code>#f</code>) results
-  in the style of the <code>let*</code> form. This document extends
-  the <code>and-let*</code> form with the abilities to pattern-match
-  (or "destructurally bind") the values of evaluated expressions
-  (where the match failure causes short-circuiting rather than
-  raising an error), and to handle multiple values (where only the
+  form, with the ability to capture the (non-<code>#f</code>) results
+  in the style of the <code>let*</code> form.  This document extends
+  the <code>and-let*</code> form with the ability to pattern-match (or
+  "destructurally bind") the values of evaluated expressions (where
+  the match failure causes short-circuiting rather than raising an
+  error) and the ability to handle multiple values (where only the
   falsehood of the first value causes short-circuiting).
 </p>
 
@@ -59,7 +59,7 @@ None at present.
   are considered to be "monads", which means that they can use some facilities
   that those languages provide for sequencing functions that return things that
   are considered to be "monads". In particular, Haskell provides a special syntactic
-  form called the <code>do</code> notation, which allows the function like</p>
+  form called the <code>do</code> notation, which allows a function like</p>
 
 <pre>
   h x = case (f x) of
@@ -85,7 +85,8 @@ to be rewritten as
 <p>Since these facilities rely on some advanced features of type systems
   that are lacking from most Scheme implementations, Schemers have invented
   a special form specifically for dealing with optional values. The form
-  is called <code>and-let*</code> and has been defined in the SRFI-2 document.</p>
+  is called <code>and-let*</code>, and was defined in <a
+  href="https://srfi.schemers.org/srfi-2/">SRFI 2</a>.</p>
 
 <p>Accordingly, the equivalent code using Scheme can be written as</p>
 
@@ -286,18 +287,19 @@ to be rewritten as
 <p>The editor of this SRFI turned out to be a real
   Schemer, and when I asked him if it would be possible
   to make sure that it gets the number 202, he said he
-  would do his best (I'm sorry for turning you in,
-  Arthur).</p>
+  would do his best.  (I'm sorry for turning you in,
+  Arthur.  [ed. note: I confess that this wasn't
+  the first numerical reservation for a SRFI.])</p>
 
 <p>This SRFI owes the support for <code>values</code>
   keyword to Marc Nieper Wißkirchen, who pointed out
-  the limitations of the original solution that
+  the limitations of the solution that
   I initially proposed. Marc's remarks about backward
   compatibility also helped to improve this text.</p>
 
 <p>The technique of pattern matching on data structures
   was brought to Scheme by Andrew K. Wright and Robert
-  Cartwright through Alex Shinn's implementation, that was
+  Cartwright through Alex Shinn's implementation, which has been
   distributed with many implementations of Scheme.</p>
 
 <p>My first contact with Scheme was through Guile,
