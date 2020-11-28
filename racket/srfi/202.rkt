@@ -30,16 +30,16 @@
 (define-syntax and-let*/match
   (lambda (stx)
     (syntax-case stx (values)
-      
+
       ((_)
        #'#t)
-      
+
       ((_ ())
        #'#t)
-      
+
       ((_ () body ...)
        #'(let () body ...))
-      
+
       ((_ ((name binding) rest ...) body ...)
        (identifier? #'name)
        #'(let ((name binding))
@@ -53,20 +53,20 @@
 	    structure ()
             (and-let*/match (rest ...)
                             body ...))))
-      
+
       ((_ ((value binding) rest ...) body ...)
        #'(match binding
            (value
             (and-let*/match (rest ...)
                             body ...))
            (_ #f)))
-      
+
       ((_ ((condition) rest ...)
           body ...)
        #'(and condition
               (and-let*/match (rest ...)
                               body ...)))
-      
+
       ((_ ((value * ... expression) rest ...)
 	  body ...)
        (identifier? #'value)
@@ -77,12 +77,12 @@
             (and value
                  (and-let*/match (rest ...)
                                  body ...)))))
-      
+
       ((_ ((value ... expression) rest ...) body ...)
        #'(call-with-values
 	     (lambda () expression)
            (match-lambda-rest
 	    (value ... . _) ()
             (and-let*/match (rest ...)
-                            body ...))))      
+                            body ...))))
       )))

@@ -159,10 +159,10 @@
 (e.g.
  (and-let* (((values a b) (values #f #t))
 	    (a))) ===> #f)
-	    
+
 ;; This SRFI doesn't specify the pattern matcher
 ;; to be used for destructuring. Here, we assume
-;; Racket's racket/match module, 
+;; Racket's racket/match module,
 ;; but any matcher that comes with a particular Scheme
 ;; implementation or that is widely recognized by some
 ;; Scheme community should be fine.

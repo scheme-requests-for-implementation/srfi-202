@@ -31,7 +31,7 @@
 		(and-let*/match (rest ...)
 				body ...))
 	       (_ #f)))))
-      
+
       ((_ ((value binding) rest ...) body ...)
        #'(match binding
 	   (value
